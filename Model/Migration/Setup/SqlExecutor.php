@@ -88,7 +88,15 @@ class SqlExecutor
             $this->config['command']
         );
 
-        $this->shell->execute($command);
-        unlink($file);
+        try {
+            $this->shell->execute($command);
+            unlink($file);
+        } catch (\Exception $e) {
+            unlink($file);
+            if ($prev = $e->getPrevious()) {
+                throw $prev;
+            }
+            throw $e;
+        }
     }
 }
