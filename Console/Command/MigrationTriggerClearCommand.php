@@ -16,7 +16,7 @@ class MigrationTriggerClearCommand extends AbstractMigrationTriggerCommand
     protected function configure()
     {
         $this->setName('migration:trigger:clear')
-            ->setDescription('Clear migration trigger.');
+            ->setDescription('Clear migration changes.');
 
         parent::configure();
     }
@@ -27,5 +27,6 @@ class MigrationTriggerClearCommand extends AbstractMigrationTriggerCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->migrationTrigger->clear();
+        $output->writeln('<info>Trigger changes have been removed</info>');
     }
 }

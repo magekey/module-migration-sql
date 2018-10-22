@@ -45,5 +45,6 @@ class MigrationSetupUpgradeCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->installer->install();
+        $output->writeln('<info>Done</info>');
     }
 }

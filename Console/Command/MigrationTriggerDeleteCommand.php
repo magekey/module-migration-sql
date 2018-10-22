@@ -43,5 +43,7 @@ class MigrationTriggerDeleteCommand extends AbstractMigrationTriggerCommand
             ->delete(
                 $input->getArgument(self::INPUT_KEY_DOCUMENT)
             );
+
+        $output->writeln('<info>Triggers has been deleted</info>');
     }
 }

@@ -43,5 +43,7 @@ class MigrationTriggerCreateCommand extends AbstractMigrationTriggerCommand
             ->create(
                 $input->getArgument(self::INPUT_KEY_DOCUMENT)
             );
+
+        $output->writeln('<info>Triggers has been added</info>');
     }
 }

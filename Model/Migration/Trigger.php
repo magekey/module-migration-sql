@@ -121,7 +121,7 @@ class Trigger
         }
         $file = $this->filesystem->getMigrationFile($name, $module, true);
         $this->filesystem->getDirectory()->writeFile($file, $content, "a+");
-        //$this->clear();
+        $this->clear();
 
         return $file;
     }
