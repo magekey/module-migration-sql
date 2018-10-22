@@ -1,6 +1,6 @@
 # Magento 2 Migration SQL
 
-Migration tool helps to migrate sql scripts created based on trigger changes.
+Developer tool helps to migrate sql scripts created based on trigger changes.
 
 ## Features:
 
