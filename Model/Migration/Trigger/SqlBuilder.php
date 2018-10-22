@@ -89,7 +89,7 @@ class SqlBuilder
                     $cols = [];
                     foreach ($row as $col => $val) {
                         $col = $this->connection->quoteIdentifier($col, true);
-                        $val = $this->connection->quote($val);
+                        $val = ($val === null ? 'NULL' : $this->connection->quote($val));
                         $cols[$col] = $val;
                     }
                     $row = $cols;
