@@ -13,6 +13,7 @@ use MageKey\MigrationSql\Model\ResourceModel\Trigger as MigrationTriggerResource
 use MageKey\MigrationSql\Model\Migration\Filesystem;
 use MageKey\MigrationSql\Model\Migration\Trigger\DocumentResolver;
 use MageKey\MigrationSql\Model\Migration\Trigger\SqlBuilder;
+use MageKey\MigrationSql\Model\ResourceModel\Setup as MigrationSetupResource;
 
 class Trigger
 {
@@ -121,6 +122,12 @@ class Trigger
         }
         $file = $this->filesystem->getMigrationFile($name, $module, true);
         $this->filesystem->getDirectory()->writeFile($file, $content, "a+");
+
+        $migrationName = pathinfo($file, PATHINFO_FILENAME);
+        $this->connection->insert(
+            $this->resource->getTableName(MigrationSetupResource::TABLE_NAME),
+            ['name' => $migrationName]
+        );
         $this->reset();
 
         return $file;
