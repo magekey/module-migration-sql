@@ -5,6 +5,8 @@
  */
 namespace MageKey\MigrationSql\Model\Migration\Trigger;
 
+use Magento\Framework\DB\Ddl\Trigger as TriggerDDL;
+
 use MageKey\MigrationSql\Model\Migration\Trigger\DocumentResolver;
 use MageKey\MigrationSql\Model\ResourceModel\Trigger as MigrationTriggerResource;
 
@@ -55,11 +57,7 @@ class SqlBuilder
             if (!$this->documentResolver->isDocumentExists($record['document'])) {
                 continue;
             }
-            $recordFieldName = $this->documentResolver->getDocumentRecordFieldName($record['document']);
-            if (!$recordFieldName) {
-                continue;
-            }
-            if ($sql = $this->getRecordSql($record, $recordFieldName)) {
+            if ($sql = $this->getRecordSql($record)) {
                 $documents[] = $record['document'];
                 $sqlArr[] = $sql;
             }
@@ -72,20 +70,20 @@ class SqlBuilder
      * Get record sql
      *
      * @param array $record
-     * @param string $recordFieldName
      * @return string|null
      */
-    protected function getRecordSql(array $record, $recordFieldName)
+    protected function getRecordSql(array $record)
     {
         $tableName = $this->connection->getTableName($record['document']);
+        $triggerEvent = strtoupper($record['trigger']);
 
-        switch ($record['trigger_id']) {
-            case MigrationTriggerResource::EVENT_INSERT:
-            case MigrationTriggerResource::EVENT_UPDATE:
+        switch ($triggerEvent) {
+            case TriggerDDL::EVENT_INSERT:
+            case TriggerDDL::EVENT_UPDATE:
                 $select = $this->connection
                     ->select()
                     ->from($tableName)
-                    ->where($recordFieldName . ' = ?', $record['record_id']);
+                    ->where($record['column'] . ' = ?', $record['value']);
                 $row = $this->connection->fetchRow($select);
                 if (!empty($row)) {
                     $cols = [];
@@ -99,8 +97,8 @@ class SqlBuilder
                 break;
         }
 
-        switch ($record['trigger_id']) {
-            case MigrationTriggerResource::EVENT_INSERT:
+        switch ($triggerEvent) {
+            case TriggerDDL::EVENT_INSERT:
                 if (!empty($row)) {
                     $sql = "INSERT INTO %s (%s) VALUES (%s);";
                     $sql = sprintf(
@@ -112,7 +110,7 @@ class SqlBuilder
                     return $sql;
                 }
                 break;
-            case MigrationTriggerResource::EVENT_UPDATE:
+            case TriggerDDL::EVENT_UPDATE:
                 if (!empty($row)) {
                     $set = [];
                     foreach ($row as $col => $val) {
@@ -124,19 +122,19 @@ class SqlBuilder
                         $sql,
                         $this->connection->quoteIdentifier($tableName),
                         implode(', ', $set),
-                        $this->connection->quoteIdentifier($recordFieldName),
-                        $this->connection->quote($record['record_id'])
+                        $this->connection->quoteIdentifier($record['column']),
+                        $this->connection->quote($record['value'])
                     );
                     return $sql;
                 }
                 break;
-            case MigrationTriggerResource::EVENT_DELETE:
+            case TriggerDDL::EVENT_DELETE:
                 $sql = "DELETE FROM %s WHERE %s = %s;";
                 $sql = sprintf(
                     $sql,
                     $this->connection->quoteIdentifier($tableName),
-                    $this->connection->quoteIdentifier($recordFieldName),
-                    $this->connection->quote($record['record_id'])
+                    $this->connection->quoteIdentifier($record['column']),
+                    $this->connection->quote($record['value'])
                 );
                 return $sql;
         }

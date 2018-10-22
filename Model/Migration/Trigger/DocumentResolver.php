@@ -43,12 +43,12 @@ class DocumentResolver
     }
 
     /**
-     * Retrieve document record field name
+     * Retrieve document primary column name
      *
      * @param string $document
      * @return string|null
      */
-    public function getDocumentRecordFieldName($document)
+    public function getDocumentPrimaryColumnName($document)
     {
         $describe = $this->connection->describeTable($document);
         foreach ($describe as $column) {

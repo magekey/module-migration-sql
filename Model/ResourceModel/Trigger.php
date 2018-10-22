@@ -17,33 +17,17 @@ class Trigger extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     /**
      * Fields
      */
+    const FIELD_ID = 'id';
+
     const FIELD_DOCUMENT = 'document';
 
-    const FIELD_TRIGGER_ID = 'trigger_id';
+    const FIELD_TRIGGER = 'trigger';
 
-    const FIELD_RECORD_ID = 'record_id';
+    const FIELD_COLUMN = 'column';
+
+    const FIELD_VALUE = 'value';
 
     const FIELD_TIME = 'time';
-
-    /**
-     * Events
-     */
-    const EVENT_INSERT = 1;
-
-    const EVENT_UPDATE = 2;
-
-    const EVENT_DELETE = 3;
-
-    /**
-     * List of events available for trigger
-     *
-     * @var array
-     */
-    protected static $listOfEvents = [
-        TriggerDDL::EVENT_INSERT => self::EVENT_INSERT,
-        TriggerDDL::EVENT_UPDATE => self::EVENT_UPDATE,
-        TriggerDDL::EVENT_DELETE => self::EVENT_DELETE
-    ];
 
     /**
      * Initialize resource model
@@ -52,16 +36,6 @@ class Trigger extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      */
     protected function _construct()
     {
-        $this->_init(self::TABLE_NAME, null);
-    }
-
-    /**
-     * Retrieve list of events available for trigger
-     *
-     * @return array
-     */
-    public static function getListOfEvents()
-    {
-        return self::$listOfEvents;
+        $this->_init(self::TABLE_NAME, self::FIELD_ID);
     }
 }

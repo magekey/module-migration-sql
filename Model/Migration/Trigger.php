@@ -187,7 +187,7 @@ class Trigger
      */
     public function createDocumentTriggers($document)
     {
-        $recordFieldName = $this->documentResolver->getDocumentRecordFieldName($document);
+        $recordFieldName = $this->documentResolver->getDocumentPrimaryColumnName($document);
         if (!$recordFieldName) {
             return;
         }
@@ -215,11 +215,6 @@ class Trigger
      */
     public function removeDocumentTriggers($document)
     {
-        $recordFieldName = $this->documentResolver->getDocumentRecordFieldName($document);
-        if (!$recordFieldName) {
-            return;
-        }
-
         foreach (TriggerDDL::getListOfEvents() as $event) {
             $triggerName = $this->getAfterEventTriggerName($document, $event);
             $this->connection->dropTrigger($triggerName);
@@ -247,18 +242,19 @@ class Trigger
                 return '';
         }
 
-        $triggerEvents = MigrationTriggerResource::getListOfEvents();
         $trigger = sprintf(
             $trigger,
             $this->connection->quoteIdentifier($this->resource->getTableName(MigrationTriggerResource::TABLE_NAME)),
             implode(', ', [
                 $this->connection->quoteIdentifier(MigrationTriggerResource::FIELD_DOCUMENT),
-                $this->connection->quoteIdentifier(MigrationTriggerResource::FIELD_TRIGGER_ID),
-                $this->connection->quoteIdentifier(MigrationTriggerResource::FIELD_RECORD_ID),
+                $this->connection->quoteIdentifier(MigrationTriggerResource::FIELD_TRIGGER),
+                $this->connection->quoteIdentifier(MigrationTriggerResource::FIELD_COLUMN),
+                $this->connection->quoteIdentifier(MigrationTriggerResource::FIELD_VALUE),
             ]),
             implode(', ', [
                 $this->connection->quote($document),
-                $triggerEvents[$event],
+                $this->connection->quote($event),
+                $this->connection->quote($recordFieldName),
                 $this->connection->quoteIdentifier('%s.' . $recordFieldName),
             ])
         );

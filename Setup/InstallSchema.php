@@ -53,29 +53,41 @@ class InstallSchema implements InstallSchemaInterface
         $table = $connection->newTable(
             $installer->getTable('migration_trigger')
         )->addColumn(
+            'id',
+            \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+            null,
+            ['nullable' => false, 'primary' => true, 'identity' => true, 'unsinged' => true],
+            'Id'
+        )->addColumn(
             'document',
             \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
             255,
             ['nullable' => false],
             'Document name'
         )->addColumn(
-            'trigger_id',
-            \Magento\Framework\DB\Ddl\Table::TYPE_SMALLINT,
-            null,
+            'trigger',
+            \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+            100,
             ['nullable' => false],
-            'Trigger Id'
+            'Trigger'
         )->addColumn(
-            'record_id',
-            \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
-            null,
+            'column',
+            \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+            100,
             ['nullable' => false],
-            'Record Id'
+            'Column'
+        )->addColumn(
+            'value',
+            \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+            255,
+            ['nullable' => false],
+            'Value'
         )->addColumn(
             'time',
             \Magento\Framework\DB\Ddl\Table::TYPE_TIMESTAMP,
             null,
             ['nullable' => false, 'default' => \Magento\Framework\DB\Ddl\Table::TIMESTAMP_INIT],
-            'Record Time'
+            'Action Time'
         )->setComment(
             'Migration Trigger Table'
         );
