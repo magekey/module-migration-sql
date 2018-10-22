@@ -124,7 +124,7 @@ class Trigger
         $this->filesystem->getDirectory()->writeFile($file, $content, "a+");
 
         $migrationName = pathinfo($file, PATHINFO_FILENAME);
-        $this->connection->insert(
+        $this->connection->insertOnDuplicate(
             $this->resource->getTableName(MigrationSetupResource::TABLE_NAME),
             ['name' => $migrationName]
         );
