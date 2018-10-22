@@ -9,7 +9,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 
-class MigrationTriggerEnableCommand extends AbstractMigrationTriggerCommand
+class MigrationTriggerDeleteCommand extends AbstractMigrationTriggerCommand
 {
     /**
      * Arguments
@@ -21,8 +21,8 @@ class MigrationTriggerEnableCommand extends AbstractMigrationTriggerCommand
      */
     protected function configure()
     {
-        $this->setName('migration:trigger:enable')
-            ->setDescription('Enable migration trigger.')
+        $this->setName('migration:trigger:delete')
+            ->setDescription('Delete migration triggers.')
             ->setDefinition([
                 new InputArgument(
                     self::INPUT_KEY_DOCUMENT,
@@ -40,7 +40,7 @@ class MigrationTriggerEnableCommand extends AbstractMigrationTriggerCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->migrationTrigger
-            ->enable(
+            ->delete(
                 $input->getArgument(self::INPUT_KEY_DOCUMENT)
             );
     }

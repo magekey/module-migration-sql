@@ -12,8 +12,8 @@
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="migrationCreateAction" xsi:type="object">MageKey\MigrationSql\Console\Command\MigrationCreateCommand</item>
-                <item name="migrationTriggerEnableAction" xsi:type="object">MageKey\MigrationSql\Console\Command\MigrationTriggerEnableCommand</item>
-                <item name="migrationTriggerDisableAction" xsi:type="object">MageKey\MigrationSql\Console\Command\MigrationTriggerDisableCommand</item>
+                <item name="migrationTriggerCreateCommand" xsi:type="object">MageKey\MigrationSql\Console\Command\MigrationTriggerCreateCommand</item>
+                <item name="migrationTriggerDeleteCommand" xsi:type="object">MageKey\MigrationSql\Console\Command\MigrationTriggerDeleteCommand</item>
                 <item name="migrationTriggerStatusAction" xsi:type="object">MageKey\MigrationSql\Console\Command\MigrationTriggerStatusCommand</item>
                 <item name="migrationTriggerPushAction" xsi:type="object">MageKey\MigrationSql\Console\Command\MigrationTriggerPushCommand</item>
                 <item name="migrationTriggerClearAction" xsi:type="object">MageKey\MigrationSql\Console\Command\MigrationTriggerClearCommand</item>

@@ -74,12 +74,12 @@ class Trigger
     }
 
     /**
-     * Enable trigger
+     * Create triggers
      *
      * @param array $documents
      * @return $this
      */
-    public function enable(array $documents = [])
+    public function create(array $documents = [])
     {
         $documents = $this->documentResolver->resolveDocuments($documents);
         foreach ($documents as $document) {
@@ -90,12 +90,12 @@ class Trigger
     }
 
     /**
-     * Disable trigger
+     * Delete triggers
      *
      * @param array $documents
      * @return $this
      */
-    public function disable(array $documents = [])
+    public function delete(array $documents = [])
     {
         $documents = $this->documentResolver->resolveDocuments($documents);
         foreach ($documents as $document) {
