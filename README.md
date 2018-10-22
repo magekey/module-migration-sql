@@ -4,7 +4,7 @@ Migration tool helps to migrate sql scripts created based on trigger changes.
 
 ## Features:
 
-- Enable / disable triggers for table(s)
+- Create / delete triggers for table(s)
 - Push changes to sql file.
 
 ## Installing the Extension
@@ -13,11 +13,11 @@ Migration tool helps to migrate sql scripts created based on trigger changes.
     
 ## Using the Extension
 
-    php bin/magento migration:trigger:enable cms_block cms_page
+    php bin/magento migration:trigger:create cms_block cms_page
     
 Do insert/update/delete changes with those tables
 
-    php bin/magento migration:trigger:disable
+    php bin/magento migration:trigger:delete
     php bin/magento migration:trigger:push [migration_name] [--module Vendor_Module]
     
 ## Apply changes
