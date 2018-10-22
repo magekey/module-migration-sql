@@ -8,15 +8,16 @@ namespace MageKey\MigrationSql\Console\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
 class MigrationTriggerPushCommand extends AbstractMigrationTriggerCommand
 {
     /**
      * Arguments
      */
-    const INPUT_KEY_NAME = 'name';
+    const INPUT_ARGUMENT_NAME = 'name';
 
-    const INPUT_KEY_MODULE = 'module';
+    const INPUT_OPTION_MODULE = 'module';
     
     /**
      * {@inheritdoc}
@@ -27,14 +28,15 @@ class MigrationTriggerPushCommand extends AbstractMigrationTriggerCommand
             ->setDescription('Push migration trigger to migration sql.')
             ->setDefinition([
                 new InputArgument(
-                    self::INPUT_KEY_NAME,
+                    self::INPUT_ARGUMENT_NAME,
                     InputArgument::OPTIONAL,
                     'Migration name'
                 ),
-                new InputArgument(
-                    self::INPUT_KEY_MODULE,
-                    InputArgument::OPTIONAL,
-                    'Module name [Vendor_Module]'
+                new InputOption(
+                    self::INPUT_OPTION_MODULE,
+                    'm',
+                    InputOption::VALUE_OPTIONAL,
+                    'Module Name [Vendor_Module]'
                 )
             ]);
 
@@ -46,9 +48,15 @@ class MigrationTriggerPushCommand extends AbstractMigrationTriggerCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->migrationTrigger->push(
-            $input->getArgument(self::INPUT_KEY_NAME),
-            $input->getArgument(self::INPUT_KEY_MODULE)
+        $file = $this->migrationTrigger->push(
+            $input->getArgument(self::INPUT_ARGUMENT_NAME),
+            $input->getOption(self::INPUT_OPTION_MODULE)
         );
+
+        if ($file) {
+            $output->writeln('<info>Changes pushed to sql file:</info> <comment>' . $file . '</comment>');
+        } else {
+            $output->writeln('<comment>Nothing to push</comment>');
+        }
     }
 }

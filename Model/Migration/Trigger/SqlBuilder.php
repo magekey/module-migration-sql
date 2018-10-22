@@ -45,6 +45,9 @@ class SqlBuilder
                 $this->connection->getTableName(MigrationTriggerResource::TABLE_NAME)
             );
         $records = $this->connection->fetchAll($select);
+        if (empty($records)) {
+            return "";
+        }
 
         $documents = [];
         $sqlArr = [];

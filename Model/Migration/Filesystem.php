@@ -88,6 +88,23 @@ class Filesystem
     }
 
     /**
+     * Assert module
+     *
+     * @param string|null $name
+     * @param string|null $module
+     * @return bool
+     * @throws \InvalidArgumentException
+     */
+    public function assertMigration($name = null, $module = null)
+    {
+        if ($module) {
+            $this->moduleDir->getDir($module);
+        }
+
+        return true;
+    }
+
+    /**
      * Get migration file
      *
      * @param string|null $name

@@ -9,6 +9,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
 use MageKey\MigrationSql\Model\Migration\Filesystem;
 
@@ -17,9 +18,9 @@ class MigrationCreateCommand extends Command
     /**
      * Arguments
      */
-    const INPUT_KEY_NAME = 'name';
+    const INPUT_ARGUMENT_NAME = 'name';
 
-    const INPUT_KEY_MODULE = 'module';
+    const INPUT_OPTION_MODULE = 'module';
 
     /**
      * @var Filesystem
@@ -45,13 +46,14 @@ class MigrationCreateCommand extends Command
             ->setDescription('Create migration script.')
             ->setDefinition([
                 new InputArgument(
-                    self::INPUT_KEY_NAME,
+                    self::INPUT_ARGUMENT_NAME,
                     InputArgument::OPTIONAL,
                     'Migration name'
                 ),
-                new InputArgument(
-                    self::INPUT_KEY_MODULE,
-                    InputArgument::OPTIONAL,
+                new InputOption(
+                    self::INPUT_OPTION_MODULE,
+                    'm',
+                    InputOption::VALUE_OPTIONAL,
                     'Module Name [Vendor_Module]'
                 )
             ]);
@@ -65,8 +67,8 @@ class MigrationCreateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $file = $this->filesystem->getMigrationFile(
-            $input->getArgument(self::INPUT_KEY_NAME),
-            $input->getArgument(self::INPUT_KEY_MODULE),
+            $input->getArgument(self::INPUT_ARGUMENT_NAME),
+            $input->getOption(self::INPUT_OPTION_MODULE),
             true
         );
 

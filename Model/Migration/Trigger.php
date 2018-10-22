@@ -110,14 +110,20 @@ class Trigger
      *
      * @param string|null $name
      * @param string|null $module
-     * @return void
+     * @return string|null
      */
     public function push($name = null, $module = null)
     {
-        $file = $this->filesystem->getMigrationFile($name, $module, true);
+        $this->filesystem->assertMigration($name, $module);
         $content = $this->sqlBuilder->build();
+        if (empty($content)) {
+            return null;
+        }
+        $file = $this->filesystem->getMigrationFile($name, $module, true);
         $this->filesystem->getDirectory()->writeFile($file, $content, "a+");
-        $this->clear();
+        //$this->clear();
+
+        return $file;
     }
 
     /**
