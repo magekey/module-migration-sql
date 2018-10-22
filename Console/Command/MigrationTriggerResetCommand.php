@@ -8,14 +8,14 @@ namespace MageKey\MigrationSql\Console\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class MigrationTriggerClearCommand extends AbstractMigrationTriggerCommand
+class MigrationTriggerResetCommand extends AbstractMigrationTriggerCommand
 {
     /**
      * {@inheritdoc}
      */
     protected function configure()
     {
-        $this->setName('migration:trigger:clear')
+        $this->setName('migration:trigger:reset')
             ->setDescription('Clear migration changes.');
 
         parent::configure();
@@ -26,7 +26,7 @@ class MigrationTriggerClearCommand extends AbstractMigrationTriggerCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->migrationTrigger->clear();
+        $this->migrationTrigger->reset();
         $output->writeln('<info>Trigger changes have been removed</info>');
     }
 }

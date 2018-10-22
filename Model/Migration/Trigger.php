@@ -121,17 +121,17 @@ class Trigger
         }
         $file = $this->filesystem->getMigrationFile($name, $module, true);
         $this->filesystem->getDirectory()->writeFile($file, $content, "a+");
-        $this->clear();
+        $this->reset();
 
         return $file;
     }
 
     /**
-     * Clear changes
+     * Reset changes
      *
      * @return void
      */
-    public function clear()
+    public function reset()
     {
         $this->connection->truncateTable(
             $this->resource->getTableName(MigrationTriggerResource::TABLE_NAME)
