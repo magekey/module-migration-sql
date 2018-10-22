@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © MageKey. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    
+    <!-- CLI Command list -->
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="migrationCreateAction" xsi:type="object">MageKey\MigrationSql\Console\Command\MigrationCreateCommand</item>
+                <item name="migrationTriggerEnableAction" xsi:type="object">MageKey\MigrationSql\Console\Command\MigrationTriggerEnableCommand</item>
+                <item name="migrationTriggerDisableAction" xsi:type="object">MageKey\MigrationSql\Console\Command\MigrationTriggerDisableCommand</item>
+                <item name="migrationTriggerStatusAction" xsi:type="object">MageKey\MigrationSql\Console\Command\MigrationTriggerStatusCommand</item>
+                <item name="migrationTriggerPushAction" xsi:type="object">MageKey\MigrationSql\Console\Command\MigrationTriggerPushCommand</item>
+                <item name="migrationTriggerClearAction" xsi:type="object">MageKey\MigrationSql\Console\Command\MigrationTriggerClearCommand</item>
+                <item name="migrationSetupUpgradeCommand" xsi:type="object">MageKey\MigrationSql\Console\Command\MigrationSetupUpgradeCommand</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Migration DI -->
+    <type name="MageKey\MigrationSql\Model\Migration\Trigger\DocumentResolver">
+        <arguments>
+            <argument name="ignored" xsi:type="array">
+                <item name="migration_setup" xsi:type="const">\MageKey\MigrationSql\Model\ResourceModel\Setup::TABLE_NAME</item>
+                <item name="migration_trigger" xsi:type="const">\MageKey\MigrationSql\Model\ResourceModel\Trigger::TABLE_NAME</item>
+            </argument>
+        </arguments>
+    </type>
+
+</config>

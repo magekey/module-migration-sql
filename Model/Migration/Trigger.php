@@ -1,0 +1,291 @@
+<?php
+/**
+ * Copyright © MageKey. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
+namespace MageKey\MigrationSql\Model\Migration;
+
+use Magento\Framework\DB\Ddl\Trigger as TriggerDDL;
+use Magento\Framework\DB\Ddl\TriggerFactory as TriggerDDLFactory;
+use Magento\Framework\DB\ExpressionConverter;
+
+use MageKey\MigrationSql\Model\ResourceModel\Trigger as MigrationTriggerResource;
+use MageKey\MigrationSql\Model\Migration\Filesystem;
+use MageKey\MigrationSql\Model\Migration\Trigger\DocumentResolver;
+use MageKey\MigrationSql\Model\Migration\Trigger\SqlBuilder;
+
+class Trigger
+{
+    /**
+     * Migration trigger prefix
+     */
+    const TRIGGER_PREFIX = 'm__';
+
+    /**
+     * @var \Magento\Framework\DB\Adapter\AdapterInterface
+     */
+    protected $connection;
+
+    /**
+     * @var \Magento\Framework\App\ResourceConnection
+     */
+    protected $resource;
+
+    /**
+     * @var TriggerDDLFactory
+     */
+    protected $ddlTriggerFactory;
+
+    /**
+     * @var DocumentResolver
+     */
+    protected $documentResolver;
+
+    /**
+     * @var Filesystem
+     */
+    protected $filesystem;
+
+    /**
+     * @var SqlBuilder
+     */
+    protected $sqlBuilder;
+
+    /**
+     * @param \Magento\Framework\App\ResourceConnection $resource
+     * @param TriggerDDLFactory $ddlTriggerFactory
+     * @param DocumentResolver $documentResolver
+     * @param Filesystem $filesystem
+     * @param SqlBuilder $sqlBuilder
+     */
+    public function __construct(
+        \Magento\Framework\App\ResourceConnection $resource,
+        TriggerDDLFactory $ddlTriggerFactory,
+        DocumentResolver $documentResolver,
+        Filesystem $filesystem,
+        SqlBuilder $sqlBuilder
+    ) {
+        $this->connection = $resource->getConnection();
+        $this->resource = $resource;
+        $this->ddlTriggerFactory = $ddlTriggerFactory;
+        $this->documentResolver = $documentResolver;
+        $this->filesystem = $filesystem;
+        $this->sqlBuilder = $sqlBuilder;
+    }
+
+    /**
+     * Enable trigger
+     *
+     * @param array $documents
+     * @return $this
+     */
+    public function enable(array $documents = [])
+    {
+        $documents = $this->documentResolver->resolveDocuments($documents);
+        foreach ($documents as $document) {
+            $this->createDocumentTriggers($document);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Disable trigger
+     *
+     * @param array $documents
+     * @return $this
+     */
+    public function disable(array $documents = [])
+    {
+        $documents = $this->documentResolver->resolveDocuments($documents);
+        foreach ($documents as $document) {
+            $this->removeDocumentTriggers($document);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Push changes
+     *
+     * @param string|null $name
+     * @param string|null $module
+     * @return void
+     */
+    public function push($name = null, $module = null)
+    {
+        $file = $this->filesystem->getMigrationFile($name, $module, true);
+        $content = $this->sqlBuilder->build();
+        $this->filesystem->getDirectory()->writeFile($file, $content, "a+");
+        $this->clear();
+    }
+
+    /**
+     * Clear changes
+     *
+     * @return void
+     */
+    public function clear()
+    {
+        $this->connection->truncateTable(
+            $this->resource->getTableName(MigrationTriggerResource::TABLE_NAME)
+        );
+    }
+
+    /**
+     * Get active documents
+     *
+     * @return array
+     */
+    public function getActiveDocuments()
+    {
+        $result = [];
+
+        $triggers = $this->getAvailableTriggers();
+        $documents = $this->connection->listTables();
+        foreach ($documents as $document) {
+            foreach (TriggerDDL::getListOfEvents() as $event) {
+                $triggerName = $this->getAfterEventTriggerName($document, $event);
+                if (isset($triggers[$triggerName])) {
+                    $result[] = $triggers[$triggerName];
+                    break;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get available triggers
+     *
+     * @return array
+     */
+    public function getAvailableTriggers()
+    {
+        $triggers = [];
+
+        $records = $this->connection->fetchAll('SHOW TRIGGERS');
+        foreach ($records as $record) {
+            $triggers[$record['Trigger']] = $record['Table'];
+        }
+
+        return $triggers;
+    }
+
+    /**
+     * Create document triggers
+     *
+     * @param string $document
+     * @return void
+     */
+    public function createDocumentTriggers($document)
+    {
+        $recordFieldName = $this->documentResolver->getDocumentRecordFieldName($document);
+        if (!$recordFieldName) {
+            return;
+        }
+
+        foreach (TriggerDDL::getListOfEvents() as $event) {
+            $triggerName = $this->getAfterEventTriggerName($document, $event);
+            $triggerDDL = $this->ddlTriggerFactory->create()
+                ->setName($triggerName)
+                ->setTime(TriggerDDL::TIME_AFTER)
+                ->setEvent($event)
+                ->setTable($this->resource->getTableName($document));
+
+            $triggerDDL->addStatement($this->buildStatement($document, $event, $recordFieldName));
+
+            $this->connection->dropTrigger($triggerDDL->getName());
+            $this->connection->createTrigger($triggerDDL);
+        }
+    }
+
+    /**
+     * Remove document triggers
+     *
+     * @param string $document
+     * @return void
+     */
+    public function removeDocumentTriggers($document)
+    {
+        $recordFieldName = $this->documentResolver->getDocumentRecordFieldName($document);
+        if (!$recordFieldName) {
+            return;
+        }
+
+        foreach (TriggerDDL::getListOfEvents() as $event) {
+            $triggerName = $this->getAfterEventTriggerName($document, $event);
+            $this->connection->dropTrigger($triggerName);
+        }
+    }
+
+    /**
+     * Build trigger statement
+     *
+     * @param string $document
+     * @param string $event
+     * @param string $recordFieldName
+     * @return string
+     */
+    protected function buildStatement($document, $event, $recordFieldName)
+    {
+        switch ($event) {
+            case TriggerDDL::EVENT_INSERT:
+            case TriggerDDL::EVENT_UPDATE:
+            case TriggerDDL::EVENT_DELETE:
+                $trigger = "INSERT IGNORE INTO %s (%s) VALUES (%s);";
+                break;
+
+            default:
+                return '';
+        }
+
+        $triggerEvents = MigrationTriggerResource::getListOfEvents();
+        $trigger = sprintf(
+            $trigger,
+            $this->connection->quoteIdentifier($this->resource->getTableName(MigrationTriggerResource::TABLE_NAME)),
+            implode(', ', [
+                $this->connection->quoteIdentifier(MigrationTriggerResource::FIELD_DOCUMENT),
+                $this->connection->quoteIdentifier(MigrationTriggerResource::FIELD_TRIGGER_ID),
+                $this->connection->quoteIdentifier(MigrationTriggerResource::FIELD_RECORD_ID),
+            ]),
+            implode(', ', [
+                $this->connection->quote($document),
+                $triggerEvents[$event],
+                $this->connection->quoteIdentifier('%s.' . $recordFieldName),
+            ])
+        );
+
+        switch ($event) {
+            case TriggerDDL::EVENT_INSERT:
+            case TriggerDDL::EVENT_UPDATE:
+                $trigger = sprintf($trigger, 'NEW');
+                break;
+            case TriggerDDL::EVENT_DELETE:
+                $trigger = sprintf($trigger, 'OLD');
+                break;
+
+            default:
+                return '';
+        }
+
+        return $trigger;
+    }
+
+    /**
+     * Build an "after" event trigger name
+     *
+     * @param string $document
+     * @param string $event
+     * @return string
+     */
+    private function getAfterEventTriggerName($document, $event)
+    {
+        $triggerName = static::TRIGGER_PREFIX
+            . $this->resource->getTableName($document)
+            . '_' . TriggerDDL::TIME_AFTER
+            . '_' . $event;
+        return strtolower(ExpressionConverter::shortenEntityName($triggerName, static::TRIGGER_PREFIX));
+    }
+}
